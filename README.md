@@ -24,6 +24,7 @@
    * DATABASE_USER
    * DATABASE_PASS
 3. Установить все пакеты из файла requirements.txt
+4. Провести миграцию моделей (python manage.py migrate)
 
 # Как запустить проект
 Находясь в корневой папке проекта использовать команду python manage.py runserver
