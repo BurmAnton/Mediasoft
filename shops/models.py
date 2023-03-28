@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models.deletion import CASCADE
 
-# Create your models here.
+
 class City(models.Model):
     name = models.CharField("Название", max_length=100)
 
