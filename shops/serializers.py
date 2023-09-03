@@ -4,11 +4,7 @@ from .models import City, Street, Shop
 
 class CitySerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField(
-        required=True, 
-        allow_blank=False, 
-        max_length=100
-    )
+    name = serializers.CharField(read_only=True)
 
     def create(self, validated_data):
         return City.objects.create(**validated_data)
@@ -21,11 +17,7 @@ class CitySerializer(serializers.Serializer):
 
 class StreetSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField(
-        required=True, 
-        allow_blank=False, 
-        max_length=100
-    )
+    name = serializers.CharField(read_only=True)
     city = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
 
     def create(self, validated_data):
@@ -59,7 +51,7 @@ class ShopSerializer(serializers.Serializer):
     )
     building = serializers.CharField(
         required=False, 
-        allow_blank=True, 
+        allow_blank=True,
         max_length=10
     )
     opening_time = serializers.TimeField(required=False)

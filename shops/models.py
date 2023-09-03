@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models.deletion import CASCADE
-
+from django.core.cache import cache
 
 class City(models.Model):
     name = models.CharField("Название", max_length=100)
@@ -28,6 +28,11 @@ class Street(models.Model):
         verbose_name = "Улица"
         verbose_name_plural = "Улицы"
 
+    def save(self, *args, **kwargs):
+        streets_cache_name = f'streets_cache_{self.city.id}'
+        cache.delete(streets_cache_name)
+        super(Street, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
@@ -45,7 +50,7 @@ class Shop(models.Model):
         on_delete=CASCADE, 
         related_name='shops',
         blank=False, 
-        null=False
+        null=False,
     )
     street = models.ForeignKey(
         Street, 
@@ -53,7 +58,7 @@ class Shop(models.Model):
         on_delete=CASCADE,
         related_name='shops',
         blank=False, 
-        null=False
+        null=False,
     )
     building = models.CharField(
         "Здание", 
@@ -61,12 +66,23 @@ class Shop(models.Model):
         null=False, 
         blank=False
     )
-    opening_time = models.TimeField("Время открытия", null=False, blank=False)
-    closing_time = models.TimeField("Время закрытия", null=False, blank=False)
+    opening_time = models.TimeField(
+        "Время открытия",
+        null=False,
+        blank=False,
+        db_index=True
+    )
+    closing_time = models.TimeField(
+        "Время закрытия",
+        null=False,
+        blank=False,
+        db_index=True
+    )
 
     class Meta:
         verbose_name = "Магазин"
         verbose_name_plural = "Магазины"
+        indexes = [models.Index(fields=['closing_time', 'opening_time'])]
 
     def __str__(self):
         return self.name
