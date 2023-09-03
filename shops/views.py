@@ -2,7 +2,6 @@ import random
 
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.core.cache import cache
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics
@@ -24,13 +23,7 @@ class StreetList(generics.ListAPIView):
     serializer_class = StreetSerializer
 
     def get_queryset(self):
-        streets_cache_name = f'streets_cache_{self.kwargs.get("city_id")}'
-        streets_cache = cache.get(streets_cache_name)
-        if streets_cache:
-            queryset = streets_cache
-        else:
-            queryset = Street.objects.filter(city=self.kwargs.get('city_id'))
-            cache.set(streets_cache_name, queryset, 60 * 60)
+        queryset = Street.objects.filter(city=self.kwargs.get('city_id'))
         return queryset
 
 
@@ -63,19 +56,21 @@ class ShopList(APIView):
 
 
 def generate_shops(request):
-    if len(City.objects.all()) < 1000: add_cities_to_db()
-    for city_indx, city in enumerate(City.objects.all()):
-        for streeet_indx, street in enumerate(city.cities.all()):
+    add_cities_to_db()
+    shops = []
+    cities = City.objects.all().prefetch_related('streets')
+    for city_indx, city in enumerate(cities):
+        for streeet_indx, street in enumerate(city.streets.all()):
             building = random.randint(1, 50)
             opening_time = f'{random.randint(1, 23)}:00'
             closing_time = f'{random.randint(1, 23)}:00'
-            shop = Shop.objects.create(
+            shops.append(Shop(
                 name=f'Магазин №{city_indx}_{streeet_indx}',
                 city=city,
                 street=street,
                 building=building,
                 opening_time=opening_time,
                 closing_time=closing_time
-            )
-            shop.save()
+            ))
+    Shop.objects.bulk_create(shops)
     return HttpResponseRedirect(reverse("admin:shops_shop_changelist"))

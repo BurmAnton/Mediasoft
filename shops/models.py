@@ -19,7 +19,7 @@ class Street(models.Model):
         City, 
         verbose_name="Город", 
         on_delete=CASCADE, 
-        related_name='cities',
+        related_name='streets',
         blank=False, 
         null=False
     )
@@ -27,11 +27,6 @@ class Street(models.Model):
     class Meta:
         verbose_name = "Улица"
         verbose_name_plural = "Улицы"
-
-    def save(self, *args, **kwargs):
-        streets_cache_name = f'streets_cache_{self.city.id}'
-        cache.delete(streets_cache_name)
-        super(Street, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name

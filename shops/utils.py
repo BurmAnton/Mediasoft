@@ -24,7 +24,7 @@ def get_closed_shops(shops):
         Q(opening_time__gt=current_time, closing_time__lt=current_time))
     )
 
-def generate_streets(city):
+def generate_streets(cities):
     streets_name = [
         'ул. Дзержинского',
         'Московское ш.',
@@ -38,17 +38,20 @@ def generate_streets(city):
         'ул. Чекистов',
         'Южный пер.',
     ]
-    for street_name in streets_name:
-        street = Street(name=street_name, city=city)
-        street.save()
+    streets = []
+    for city in cities:
+        for street_name in streets_name:
+            streets.append(Street(name=street_name, city=city))
+    Street.objects.bulk_create(streets)
 
 def add_cities_to_db():
     with open("russian-cities.json", "r") as read_file:
         cities_data = json.load(read_file)
+    cities = []
     for city in cities_data:
-        city, is_new = City.objects.get_or_create(name=city['name'])
-        if is_new:
-            generate_streets(city)
+        cities.append(City(name=city['name']))
+    cities = City.objects.bulk_create(cities)
+    generate_streets(cities)
 
 
 
